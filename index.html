@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html><html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Comodio Restro</title>
+
+  <style>
+
+    body {
+
+      margin: 0;
+
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+      background: #f5f5f5;
+
+    }
+
+    header {
+
+      background: rgba(255, 255, 255, 0.8);
+
+      backdrop-filter: blur(10px);
+
+      padding: 1rem 2rem;
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+    }
+
+    nav button {
+
+      margin-left: 10px;
+
+      padding: 8px 16px;
+
+      border: none;
+
+      background: #1e90ff;
+
+      color: white;
+
+      border-radius: 8px;
+
+      cursor: pointer;
+
+    }
+
+    h1, h2 {
+
+      margin: 0;
+
+    }
+
+    .filter-search {
+
+      display: flex;
+
+      gap: 1rem;
+
+      margin: 20px;
+
+      align-items: center;
+
+    }
+
+    #menu-grid {
+
+      display: grid;
+
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+      gap: 20px;
+
+      padding: 20px;
+
+    }
+
+    .menu-item {
+
+      background: white;
+
+      border-radius: 20px;
+
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+
+      padding: 10px;
+
+      text-align: center;
+
+      transition: transform 0.3s;
+
+    }
+
+    .menu-item:hover {
+
+      transform: translateY(-5px);
+
+    }
+
+    .menu-item img {
+
+      width: 100%;
+
+      height: 150px;
+
+      object-fit: cover;
+
+      border-radius: 16px;
+
+    }
+
+    .modal {
+
+      position: fixed;
+
+      top: 0; left: 0;
+
+      width: 100%; height: 100%;
+
+      background: rgba(0,0,0,0.6);
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+    }
+
+    .modal-content {
+
+      background: white;
+
+      padding: 2rem;
+
+      border-radius: 1rem;
+
+      width: 300px;
+
+    }
+
+    .hidden { display: none; }
+
+    input {
+
+      width: 100%;
+
+      padding: 8px;
+
+      margin: 10px 0;
+
+    }
+
+    #cart-details {
+
+      padding: 1rem;
+
+      background: #e0f7fa;
+
+      margin: 20px;
+
+      border-radius: 10px;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <header>
+
+    <h1>Comodio Restro</h1>
+
+    <nav>
+
+      <button onclick="showLogin()">Login</button>
+
+      <button onclick="showSignup()">Signup</button>
+
+      <button onclick="viewCart()">Cart (<span id="cart-count">0</span>)</button>
+
+    </nav>
+
+  </header>  <div class="filter-search">
+
+    <select onchange="filterCategory(this.value)">
+
+      <option value="all">All</option>
+
+      <option value="veg">Veg</option>
+
+      <option value="non-veg">Non-Veg</option>
+
+      <option value="drinks">Drinks</option>
+
+      <option value="tea">Teas</option>
+
+    </select>
+
+    <input type="text" id="searchInput" onkeyup="searchItems()" placeholder="Search food...">
+
+  </div>  <section id="menu">
+
+    <h2 style="text-align:center">Menu</h2>
+
+    <div id="menu-grid"></div>
+
+  </section>  <div id="cart-details" class="hidden"></div>  <div id="auth-modal" class="modal hidden">
+
+    <div class="modal-content">
+
+      <span class="close" onclick="closeModal()">&times;</span>
+
+      <div id="login-form">
+
+        <h3>Login</h3>
+
+        <input id="login-user" placeholder="Username" />
+
+        <input id="login-pass" type="password" placeholder="Password" />
+
+        <button onclick="loginUser()">Login</button>
+
+      </div>
+
+      <div id="signup-form" class="hidden">
+
+        <h3>Signup</h3>
+
+        <input id="signup-user" placeholder="Username" />
+
+        <input id="signup-pass" type="password" placeholder="Password" />
+
+        <button onclick="signupUser()">Signup</button>
+
+      </div>
+
+    </div>
+
+  </div>  <script>
+
+    const menuItems = Array.from({ length: 50 }, (_, i) => {
+
+      const categories = ['veg', 'non-veg', 'drinks', 'tea'];
+
+      const category = categories[i % 4];
+
+      return {
+
+        name: `${category.toUpperCase()} Item ${i + 1}`,
+
+        category,
+
+        img: `https://source.unsplash.com/featured/?${category},food&sig=${i}`
+
+      }
+
+    });
+
+    let cart = [];
+
+    const menuGrid = document.getElementById('menu-grid');
+
+    function renderMenu(items) {
+
+      menuGrid.innerHTML = '';
+
+      items.forEach(item => {
+
+        const div = document.createElement('div');
+
+        div.className = 'menu-item';
+
+        div.innerHTML = `
+
+          <img src="${item.img}" alt="${item.name}" />
+
+          <h3>${item.name}</h3>
+
+          <button onclick='addToCart("${item.name}")'>Add to Cart</button>
+
+        `;
+
+        menuGrid.appendChild(div);
+
+      });
+
+    }
+
+    renderMenu(menuItems);
+
+    function addToCart(name) {
+
+      cart.push(name);
+
+      document.getElementById('cart-count').textContent = cart.length;
+
+    }
+
+    function viewCart() {
+
+      const cartBox = document.getElementById('cart-details');
+
+      cartBox.innerHTML = `<h3>Your Cart:</h3><ul>${cart.map(i => `<li>${i}</li>`).join('')}</ul>`;
+
+      cartBox.classList.remove('hidden');
+
+    }
+
+    function showLogin() {
+
+      document.getElementById('auth-modal').classList.remove('hidden');
+
+      document.getElementById('login-form').classList.remove('hidden');
+
+      document.getElementById('signup-form').classList.add('hidden');
+
+    }
+
+    function showSignup() {
+
+      document.getElementById('auth-modal').classList.remove('hidden');
+
+      document.getElementById('login-form').classList.add('hidden');
+
+      document.getElementById('signup-form').classList.remove('hidden');
+
+    }
+
+    function closeModal() {
+
+      document.getElementById('auth-modal').classList.add('hidden');
+
+    }
+
+    function signupUser() {
+
+      const user = document.getElementById('signup-user').value;
+
+      const pass = document.getElementById('signup-pass').value;
+
+      localStorage.setItem('comodio-user', JSON.stringify({ user, pass }));
+
+      alert('Signup successful! Please login.');
+
+      closeModal();
+
+    }
+
+    function loginUser() {
+
+      const user = document.getElementById('login-user').value;
+
+      const pass = document.getElementById('login-pass').value;
+
+      const saved = JSON.parse(localStorage.getItem('comodio-user'));
+
+      if (saved && saved.user === user && saved.pass === pass) {
+
+        alert('Login successful');
+
+        closeModal();
+
+      } else {
+
+        alert('Invalid credentials');
+
+      }
+
+    }
+
+    function filterCategory(cat) {
+
+      if (cat === 'all') return renderMenu(menuItems);
+
+      const filtered = menuItems.filter(item => item.category === cat);
+
+      renderMenu(filtered);
+
+    }
+
+    function searchItems() {
+
+      const val = document.getElementById('searchInput').value.toLowerCase();
+
+      const filtered = menuItems.filter(item => item.name.toLowerCase().includes(val));
+
+      renderMenu(filtered);
+
+    }
+
+  </script></body>
+
+</html>
+<!-- partial -->
+  
+</body>
+</html>
